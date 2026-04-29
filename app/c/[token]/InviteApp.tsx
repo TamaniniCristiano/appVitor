@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { inviteApi, type ValidateResp } from '@/lib/api';
+import MiniGame from './MiniGame';
 
 type Screen = 'code' | 'invite' | 'confirmed';
 
@@ -243,6 +244,17 @@ function FullInvite({ token, code, firstName }: { token: string; code: string; f
           🔊 Toca no autofalante e aumenta o volume, {firstName}!!
         </div>
       )}
+      {muted && (
+        <button
+          type="button"
+          className="audio-toggle-center"
+          onClick={toggleAudio}
+          aria-label="Tocar música"
+          title="Tocar música"
+        >
+          🔇
+        </button>
+      )}
       <button
         type="button"
         className="audio-toggle"
@@ -368,6 +380,8 @@ function FullInvite({ token, code, firstName }: { token: string; code: string; f
           </div>
         </div>
       </section>
+
+      <MiniGame />
 
       <RsvpSection
         token={token}
