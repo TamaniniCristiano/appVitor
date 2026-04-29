@@ -18,7 +18,7 @@ const TOTAL_COINS = NUM_BLOCKS * COINS_PER_BLOCK;
 const WORLD_W = 2200;
 const FIRST_BLOCK_X = 220;
 const BLOCK_SPACING = 200;
-const ROUND_TIME_MS = 40000;
+const ROUND_TIME_MS = 30000;
 const MAX_ATTEMPTS = 3;
 
 interface Block {
@@ -463,7 +463,7 @@ export default function MiniGame({ token, bestScore, onRoundEnd }: Props) {
             <div className="game-overlay">
               <div className="overlay-card">
                 <div className="overlay-eyebrow">🎮 Desafio</div>
-                <h3>Pegue o máximo de moedas em <strong>40 segundos</strong></h3>
+                <h3>Pegue o máximo de moedas em <strong>30 segundos</strong></h3>
                 <ul className="overlay-rules">
                   <li><strong>10 caixinhas</strong> × <strong>10 moedas</strong> = 100 no total</li>
                   <li>Bata embaixo das caixinhas pulando</li>
