@@ -366,8 +366,7 @@ function CastSection() {
 ========================================================== */
 function RsvpSection({ token, code }: { token: string; code: string }) {
   const [presenca, setPresenca] = useState<'sim' | 'nao' | 'talvez'>('sim');
-  const [quantidade, setQuantidade] = useState(1);
-  const [observacao, setObservacao] = useState('');
+  const [mensagem, setMensagem] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
 
   async function submit(e: React.FormEvent) {
@@ -375,8 +374,8 @@ function RsvpSection({ token, code }: { token: string; code: string }) {
     setStatus('sending');
     try {
       await inviteApi.rsvp({
-        token, code, presenca, quantidade,
-        observacao: observacao.trim() || undefined,
+        token, code, presenca, quantidade: 1,
+        observacao: mensagem.trim() || undefined,
       });
       setStatus('success');
     } catch {
@@ -398,20 +397,14 @@ function RsvpSection({ token, code }: { token: string; code: string }) {
             <label htmlFor="presenca">Você vai? <span className="req">*</span></label>
             <select id="presenca" value={presenca}
                     onChange={(e) => setPresenca(e.target.value as 'sim' | 'nao' | 'talvez')} required>
-              <option value="sim">Vou sim, estou a caminho!</option>
-              <option value="talvez">Ainda não tenho certeza</option>
+              <option value="sim">Vou sim!</option>
               <option value="nao">Infelizmente não vou conseguir</option>
             </select>
           </div>
           <div className="form-row">
-            <label htmlFor="quantidade">Quantas pessoas? <span className="req">*</span></label>
-            <input id="quantidade" type="number" min={1} max={20}
-                   value={quantidade} onChange={(e) => setQuantidade(Number(e.target.value) || 1)} required />
-          </div>
-          <div className="form-row">
-            <label htmlFor="observacao">Observações (alergias, etc.)</label>
-            <textarea id="observacao" placeholder="Ex.: meu filho tem alergia a amendoim"
-                      value={observacao} onChange={(e) => setObservacao(e.target.value)} />
+            <label htmlFor="mensagem">Mensagem pro Vitor</label>
+            <textarea id="mensagem" placeholder="Deixe um recadinho de aniversário pro Vitor 🎂"
+                      value={mensagem} onChange={(e) => setMensagem(e.target.value)} />
           </div>
           <button type="submit" className="submit-btn" disabled={status === 'sending'}>
             {status === 'sending' ? 'Enviando…' : 'Enviar confirmação'}
