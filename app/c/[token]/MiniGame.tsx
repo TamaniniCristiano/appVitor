@@ -18,7 +18,7 @@ const TOTAL_COINS = NUM_BLOCKS * COINS_PER_BLOCK;
 const WORLD_W = 2200;
 const FIRST_BLOCK_X = 220;
 const BLOCK_SPACING = 200;
-const ROUND_TIME_MS = 20000;
+const ROUND_TIME_MS = 40000;
 const MAX_ATTEMPTS = 3;
 
 interface Block {
@@ -463,13 +463,12 @@ export default function MiniGame({ token, bestScore, onRoundEnd }: Props) {
             <div className="game-overlay">
               <div className="overlay-card">
                 <div className="overlay-eyebrow">🎮 Desafio</div>
-                <h3>Pegue o máximo de moedas em <strong>20 segundos</strong></h3>
+                <h3>Pegue o máximo de moedas em <strong>40 segundos</strong></h3>
                 <ul className="overlay-rules">
-                  <li>São <strong>10 caixinhas</strong> com <strong>10 moedas</strong> cada (100 no total)</li>
+                  <li><strong>10 caixinhas</strong> × <strong>10 moedas</strong> = 100 no total</li>
                   <li>Bata embaixo das caixinhas pulando</li>
                   <li>Você tem <strong>{attempts} tentativa{attempts === 1 ? '' : 's'}</strong></li>
-                  <li>🎁 Mais moedas em menos tempo = <strong>presente</strong></li>
-                  <li>🎂 Entregue <strong>na festa</strong> pra uma criança (que não seja o Vitor 😜)</li>
+                  <li>🎁 Mais moedas em menos tempo ganha um presente — entregue <strong>na festa</strong> pra uma criança (não o Vitor 😜)</li>
                 </ul>
                 <button className="overlay-btn" onClick={startCountdown}>
                   ▶ Jogar
@@ -544,11 +543,12 @@ export default function MiniGame({ token, bestScore, onRoundEnd }: Props) {
           <div className="dpad">
             <button
               className="ctrl-btn"
-              onMouseDown={() => press('left')}
+              onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); press('left'); }}
               onMouseUp={release}
               onMouseLeave={release}
-              onTouchStart={(e) => { e.preventDefault(); press('left'); }}
-              onTouchEnd={(e) => { e.preventDefault(); release(); }}
+              onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); press('left'); }}
+              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); release(); }}
+              onContextMenu={(e) => e.preventDefault()}
               disabled={gameState !== 'playing'}
               aria-label="Esquerda"
             >
@@ -556,11 +556,12 @@ export default function MiniGame({ token, bestScore, onRoundEnd }: Props) {
             </button>
             <button
               className="ctrl-btn"
-              onMouseDown={() => press('right')}
+              onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); press('right'); }}
               onMouseUp={release}
               onMouseLeave={release}
-              onTouchStart={(e) => { e.preventDefault(); press('right'); }}
-              onTouchEnd={(e) => { e.preventDefault(); release(); }}
+              onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); press('right'); }}
+              onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); release(); }}
+              onContextMenu={(e) => e.preventDefault()}
               disabled={gameState !== 'playing'}
               aria-label="Direita"
             >
@@ -569,8 +570,9 @@ export default function MiniGame({ token, bestScore, onRoundEnd }: Props) {
           </div>
           <button
             className="ctrl-btn jump-btn"
-            onMouseDown={(e) => { e.preventDefault(); jump(); }}
-            onTouchStart={(e) => { e.preventDefault(); jump(); }}
+            onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); jump(); }}
+            onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); jump(); }}
+            onContextMenu={(e) => e.preventDefault()}
             disabled={gameState !== 'playing'}
             aria-label="Pular"
           >
