@@ -129,6 +129,49 @@ img, svg { display:block; max-width:100%; }
                  margin-bottom:12px;line-height:1.1;}
 .confirmed-msg{color:var(--indigo-lt);font-size:16px;line-height:1.6;max-width:380px;margin:0 auto;}
 
+/* ========== AUDIO TOGGLE ========== */
+.audio-toggle{
+  position:fixed;bottom:18px;right:18px;z-index:60;
+  width:52px;height:52px;border-radius:50%;
+  background:var(--red);color:#fff;
+  border:2px solid rgba(255,255,255,0.85);
+  cursor:pointer;font-size:22px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 20px rgba(230,0,18,0.4);
+  transition:transform 200ms ease,box-shadow 200ms ease,background 200ms ease;
+  animation:audio-pulse 1.8s ease-in-out infinite;
+}
+@keyframes audio-pulse{
+  0%,100%{box-shadow:0 6px 20px rgba(230,0,18,0.4),0 0 0 0 rgba(255,224,102,0.55);}
+  50%{box-shadow:0 6px 20px rgba(230,0,18,0.4),0 0 0 12px rgba(255,224,102,0);}
+}
+.audio-toggle:hover{transform:scale(1.08);background:var(--red-hover);}
+.audio-toggle:active{transform:scale(0.95);}
+
+.audio-hint{
+  position:fixed;bottom:80px;right:18px;z-index:60;
+  background:linear-gradient(135deg,var(--red) 0%,var(--red-hover) 100%);
+  color:#fff;padding:10px 14px;border-radius:14px;
+  font-size:13px;font-weight:600;letter-spacing:.2px;line-height:1.35;
+  max-width:280px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.35);
+  border:1px solid rgba(255,255,255,0.25);
+  animation:audio-hint-bob 2.2s ease-in-out infinite;
+}
+.audio-hint::after{
+  content:'';position:absolute;bottom:-8px;right:24px;
+  width:0;height:0;
+  border-left:8px solid transparent;border-right:8px solid transparent;
+  border-top:8px solid var(--red-hover);
+}
+@keyframes audio-hint-bob{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-4px)}
+}
+@media (max-width:520px){
+  .audio-hint{font-size:12px;padding:8px 12px;}
+}
+
 /* ========== INVITE: nav ========== */
 .topnav{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:50;
         background:rgba(11,14,44,0.7);backdrop-filter:saturate(140%) blur(14px);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { inviteApi, type ValidateResp } from '@/lib/api';
 
 type Screen = 'code' | 'invite' | 'confirmed';
@@ -180,6 +180,29 @@ function ConfirmedScreen({
 ========================================================== */
 function FullInvite({ token, code, firstName }: { token: string; code: string; firstName: string }) {
   const [cd, setCd] = useState({ d: '--', h: '--', m: '--', s: '--' });
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [muted, setMuted] = useState(true);
+
+  // Tenta dar play mutado quando o convite é exibido (autoplay permitido enquanto sem som)
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = 0.35;
+    audio.muted = true;
+    audio.play().catch(() => {});
+  }, []);
+
+  function toggleAudio() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const next = !audio.muted;
+    audio.muted = next;
+    setMuted(next);
+    // Se ainda não estava tocando (autoplay bloqueado), força agora — vale como user gesture
+    if (!next && audio.paused) {
+      audio.play().catch(() => {});
+    }
+  }
 
   useEffect(() => {
     function tick() {
@@ -199,6 +222,22 @@ function FullInvite({ token, code, firstName }: { token: string; code: string; f
 
   return (
     <>
+      <audio ref={audioRef} src="/audio/mario-theme.mp3" loop preload="auto" />
+      {muted && (
+        <div className="audio-hint" aria-hidden="true">
+          🔊 Toca no autofalante e aumenta o volume, {firstName}!!
+        </div>
+      )}
+      <button
+        type="button"
+        className="audio-toggle"
+        onClick={toggleAudio}
+        aria-label={muted ? 'Tocar música' : 'Silenciar'}
+        title={muted ? 'Tocar música' : 'Silenciar'}
+      >
+        {muted ? '🔇' : '🔊'}
+      </button>
+
       <nav className="topnav" aria-label="Atalhos">
         <div className="topnav-brand">VITOR <span>★</span> 6 ANOS</div>
         <a href="#rsvp" className="topnav-cta">Confirmar presença</a>
