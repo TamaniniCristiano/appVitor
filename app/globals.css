@@ -262,6 +262,90 @@ img, svg { display:block; max-width:100%; }
 }
 .ctrl-hint strong{color:var(--star);}
 
+/* Timer e overlays do mini-game */
+.game-timer{
+  position:absolute;top:14px;left:14px;z-index:25;
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,0,0,0.55);color:#fff;
+  padding:6px 12px;border-radius:100px;
+  font-weight:800;font-size:14px;letter-spacing:.3px;
+  font-variant-numeric:tabular-nums;
+  border:1px solid rgba(255,255,255,0.2);
+}
+.timer-num{color:var(--star);}
+.game-overlay{
+  position:absolute;inset:0;z-index:30;
+  background:rgba(5,6,22,0.88);
+  backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  padding:10px;overflow-y:auto;
+  animation:fade-in 200ms ease;
+}
+.overlay-card{
+  max-width:380px;width:100%;
+  background:linear-gradient(180deg,rgba(11,14,44,0.95),rgba(11,14,44,0.85));
+  border:2px solid rgba(255,224,102,0.5);border-radius:14px;
+  padding:14px 18px 16px;text-align:center;
+  box-shadow:0 16px 40px rgba(0,0,0,0.55);
+  margin:auto;
+}
+.overlay-eyebrow{
+  display:inline-block;font-size:10px;font-weight:700;letter-spacing:2.5px;
+  text-transform:uppercase;color:var(--star);margin-bottom:6px;
+}
+.overlay-card h3{
+  font-size:15px;font-weight:700;color:#fff;
+  margin-bottom:10px;line-height:1.25;letter-spacing:-0.01em;
+}
+.overlay-card h3 strong{color:var(--star);}
+.overlay-rules{
+  list-style:none;text-align:left;
+  font-size:12px;color:var(--indigo-lt);line-height:1.4;
+  margin:0 auto 12px;max-width:320px;
+}
+.overlay-rules li{
+  position:relative;padding-left:16px;margin-bottom:3px;
+}
+.overlay-rules li::before{
+  content:'★';position:absolute;left:0;top:0;color:var(--star);font-size:11px;
+}
+.overlay-rules strong{color:#fff;}
+.overlay-hint{font-size:12px;color:var(--indigo-lt);line-height:1.4;margin-top:4px;}
+.overlay-hint strong{color:var(--star);}
+.overlay-btn{
+  margin-top:6px;
+  background:var(--red);color:#fff;border:0;
+  padding:11px 24px;border-radius:100px;
+  font-weight:800;font-size:13px;letter-spacing:.5px;
+  cursor:pointer;font-family:inherit;
+  box-shadow:0 6px 18px rgba(230,0,18,0.45);
+  transition:transform 200ms,background 200ms;
+}
+.overlay-btn:hover{background:var(--red-hover);transform:translateY(-2px);}
+.overlay-btn.ghost{
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.2);
+  box-shadow:none;
+}
+.overlay-btn.ghost:hover{background:rgba(255,255,255,0.15);}
+
+.countdown-overlay{background:rgba(5,6,22,0.6);}
+.countdown-num{
+  font-size:clamp(72px,18vw,160px);
+  font-weight:900;letter-spacing:-0.04em;line-height:1;
+  background:linear-gradient(180deg,#fff 0%,#FFE066 60%,#FFB400 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:0 0 60px rgba(255,224,102,0.5);
+  animation:countdown-pop 1s ease;
+}
+@keyframes countdown-pop{
+  0%{transform:scale(0.4);opacity:0}
+  30%{transform:scale(1.2);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+
+.ctrl-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
 /* Bandeira do final do level */
 .finish-flag{
   position:absolute;bottom:30px;width:60px;height:180px;pointer-events:none;
@@ -314,8 +398,10 @@ img, svg { display:block; max-width:100%; }
 @media (max-width:520px){
   .ctrl-btn{width:52px;height:52px;font-size:18px;}
   .jump-btn{width:62px;height:62px;font-size:16px;}
-  .arena{height:200px !important;}
+  .arena{height:240px !important;}
   .ctrl-hint{font-size:11px;}
+  .overlay-card h3{font-size:14px;}
+  .overlay-rules{font-size:11px;}
 }
 
 /* ========== CELEBRATION (Mario flag) ========== */

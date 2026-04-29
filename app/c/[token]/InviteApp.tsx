@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { inviteApi, type ValidateResp } from '@/lib/api';
-import MiniGame from './MiniGame';
+import MiniGame, { type BestScore } from './MiniGame';
 
 type Screen = 'code' | 'invite' | 'confirmed';
 
@@ -183,6 +183,33 @@ function FullInvite({ token, code, firstName }: { token: string; code: string; f
   const [cd, setCd] = useState({ d: '--', h: '--', m: '--', s: '--' });
   const audioRef = useRef<HTMLAudioElement>(null);
   const [muted, setMuted] = useState(true);
+  const [bestScore, setBestScore] = useState<BestScore>({ coins: 0, timeMs: 20000 });
+
+  // Carrega melhor score persistido do localStorage
+  useEffect(() => {
+    if (!token) return;
+    try {
+      const stored = localStorage.getItem(`vitor_mg_best_${token}`);
+      if (stored) {
+        const p = JSON.parse(stored);
+        if (typeof p?.coins === 'number' && typeof p?.timeMs === 'number') {
+          setBestScore({ coins: p.coins, timeMs: p.timeMs });
+        }
+      }
+    } catch { /* ignore */ }
+  }, [token]);
+
+  function handleRoundEnd(round: BestScore) {
+    setBestScore((prev) => {
+      // Mais moedas vence; em caso de empate, menos tempo vence
+      const better =
+        round.coins > prev.coins ||
+        (round.coins === prev.coins && round.timeMs < prev.timeMs);
+      const next = better ? round : prev;
+      try { localStorage.setItem(`vitor_mg_best_${token}`, JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  }
 
   // Tenta dar play mutado quando o convite é exibido (autoplay permitido enquanto sem som)
   useEffect(() => {
@@ -381,13 +408,14 @@ function FullInvite({ token, code, firstName }: { token: string; code: string; f
         </div>
       </section>
 
-      <MiniGame />
+      <MiniGame token={token} bestScore={bestScore} onRoundEnd={handleRoundEnd} />
 
       <RsvpSection
         token={token}
         code={code}
         firstName={firstName}
         audioMuted={muted}
+        bestScore={bestScore}
         onSuccess={(p) => playEndMusic(p === 'sim' ? 'victory' : 'death')}
       />
 
@@ -442,12 +470,13 @@ function CastSection() {
    RSVP
 ========================================================== */
 function RsvpSection({
-  token, code, firstName, audioMuted, onSuccess,
+  token, code, firstName, audioMuted, bestScore, onSuccess,
 }: {
   token: string;
   code: string;
   firstName: string;
   audioMuted: boolean;
+  bestScore: BestScore;
   onSuccess: (presenca: 'sim' | 'nao' | 'talvez') => void;
 }) {
   const [presenca, setPresenca] = useState<'sim' | 'nao' | 'talvez'>('sim');
@@ -464,6 +493,8 @@ function RsvpSection({
       await inviteApi.rsvp({
         token, code, presenca, quantidade: 1,
         observacao: mensagem.trim() || undefined,
+        score_coins: bestScore.coins,
+        score_time_ms: bestScore.timeMs,
       });
       setStatus('success');
       onSuccess(presenca);

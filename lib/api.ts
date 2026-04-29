@@ -46,6 +46,8 @@ export type Guest = {
   rsvp_count: number | null;
   rsvp_note: string | null;
   rsvp_at: string | null;
+  score_coins: number | null;
+  score_time_ms: number | null;
   created_at: string;
 };
 
@@ -68,6 +70,8 @@ export const inviteApi = {
     presenca: 'sim' | 'nao' | 'talvez';
     quantidade: number;
     observacao?: string;
+    score_coins?: number;
+    score_time_ms?: number;
   }) =>
     request<{ ok: true }>(`/api/invite/rsvp`, {
       method: 'POST',

@@ -182,15 +182,16 @@ export default function AdminPage() {
                 <th>Código</th>
                 <th>Acessos</th>
                 <th>RSVP</th>
+                <th>🪙 Score</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {loading && (
-                <tr><td colSpan={7} className="empty">Carregando…</td></tr>
+                <tr><td colSpan={8} className="empty">Carregando…</td></tr>
               )}
               {!loading && guests.length === 0 && (
-                <tr><td colSpan={7} className="empty">Nenhum convidado ainda.</td></tr>
+                <tr><td colSpan={8} className="empty">Nenhum convidado ainda.</td></tr>
               )}
               {!loading && guests.map(g => {
                 const burned = g.access_count >= g.max_access;
@@ -206,6 +207,25 @@ export default function AdminPage() {
                       </span>
                     </td>
                     <td>{pill(g.rsvp_status)}</td>
+                    <td>
+                      {g.rsvp_status ? (
+                        <span
+                          style={{
+                            color: (g.score_coins ?? 0) > 0 ? 'var(--star)' : 'rgba(255,255,255,0.45)',
+                            fontWeight: 700,
+                          }}
+                        >
+                          {g.score_coins ?? 0}/100
+                          {g.score_time_ms != null && (g.score_coins ?? 0) >= 100 && (
+                            <span style={{ opacity: 0.7, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>
+                              {(g.score_time_ms / 1000).toFixed(1)}s
+                            </span>
+                          )}
+                        </span>
+                      ) : (
+                        <span style={{ opacity: 0.4 }}>—</span>
+                      )}
+                    </td>
                     <td className="actions">
                       <a className="btn-mini" target="_blank" rel="noopener" href={whatsappUrl(g)}>WhatsApp</a>
                       <button className="btn-mini ghost" onClick={() => copyMsg(g)}>Copiar msg</button>
