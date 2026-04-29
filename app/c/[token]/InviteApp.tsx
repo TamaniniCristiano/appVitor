@@ -204,6 +204,21 @@ function FullInvite({ token, code, firstName }: { token: string; code: string; f
     }
   }
 
+  // Troca pra música final dependendo da resposta:
+  // 'sim' → tema de vitória (fase concluída)
+  // 'nao' → tema de morte (game over) 🤣
+  function playEndMusic(type: 'victory' | 'death') {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.src = type === 'victory' ? '/audio/mario-victory.mp3' : '/audio/mario-death.mp3';
+    audio.loop = false;
+    audio.muted = false;
+    audio.volume = 0.5;
+    audio.play().catch(() => {});
+    setMuted(false);
+  }
+
   useEffect(() => {
     function tick() {
       const target = new Date(2026, 5, 7, 15, 0, 0);
@@ -354,11 +369,20 @@ function FullInvite({ token, code, firstName }: { token: string; code: string; f
         </div>
       </section>
 
-      <RsvpSection token={token} code={code} />
+      <RsvpSection
+        token={token}
+        code={code}
+        firstName={firstName}
+        audioMuted={muted}
+        onSuccess={(p) => playEndMusic(p === 'sim' ? 'victory' : 'death')}
+      />
 
       <footer className="footer">
         <p>Feito com <span style={{ color: 'var(--red)' }}>♥</span> para o <strong>Vitor Rafael</strong> • 6 anos</p>
         <p style={{ marginTop: 4, opacity: 0.7 }}>A galáxia espera por você.</p>
+        <p style={{ marginTop: 16, opacity: 0.5, fontSize: 12, letterSpacing: 1 }}>
+          Desenvolvido por <strong>Cristiano Tamanini</strong>
+        </p>
       </footer>
     </>
   );
@@ -403,13 +427,24 @@ function CastSection() {
 /* ==========================================================
    RSVP
 ========================================================== */
-function RsvpSection({ token, code }: { token: string; code: string }) {
+function RsvpSection({
+  token, code, firstName, audioMuted, onSuccess,
+}: {
+  token: string;
+  code: string;
+  firstName: string;
+  audioMuted: boolean;
+  onSuccess: (presenca: 'sim' | 'nao' | 'talvez') => void;
+}) {
   const [presenca, setPresenca] = useState<'sim' | 'nao' | 'talvez'>('sim');
   const [mensagem, setMensagem] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [celebrating, setCelebrating] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (audioMuted) return; // gate: precisa ter ativado o som
     setStatus('sending');
     try {
       await inviteApi.rsvp({
@@ -417,12 +452,22 @@ function RsvpSection({ token, code }: { token: string; code: string }) {
         observacao: mensagem.trim() || undefined,
       });
       setStatus('success');
+      onSuccess(presenca);
+      if (presenca === 'sim')      setCelebrating(true);
+      else if (presenca === 'nao') setGameOver(true);
     } catch {
       setStatus('error');
     }
   }
 
   return (
+    <>
+      {celebrating && (
+        <CelebrationFlag firstName={firstName} onClose={() => setCelebrating(false)} />
+      )}
+      {gameOver && (
+        <GameOverScreen firstName={firstName} onClose={() => setGameOver(false)} />
+      )}
     <section className="rsvp" id="rsvp">
       <div className="container">
         <form className="rsvp-card" onSubmit={submit}>
@@ -445,9 +490,23 @@ function RsvpSection({ token, code }: { token: string; code: string }) {
             <textarea id="mensagem" placeholder="Deixe um recadinho de aniversário pro Vitor 🎂"
                       value={mensagem} onChange={(e) => setMensagem(e.target.value)} />
           </div>
-          <button type="submit" className="submit-btn" disabled={status === 'sending'}>
-            {status === 'sending' ? 'Enviando…' : 'Enviar confirmação'}
+          <button
+            type="submit"
+            className="submit-btn"
+            disabled={status === 'sending' || audioMuted}
+            title={audioMuted ? 'Toca no autofalante e ativa o som primeiro' : ''}
+          >
+            {audioMuted
+              ? '🔊 Ativa o som primeiro pra confirmar'
+              : status === 'sending'
+                ? 'Enviando…'
+                : 'Enviar confirmação'}
           </button>
+          {audioMuted && (
+            <p style={{ marginTop: 10, fontSize: 13, color: 'var(--star)', textAlign: 'center' }}>
+              🎵 Toca no botão vermelho no canto pra liberar a confirmação!
+            </p>
+          )}
           {status === 'success' && (
             <div className="form-status success" style={{ display: 'block' }}>
               ★ Confirmação recebida. Até dia 07/06 na galáxia!
@@ -461,5 +520,87 @@ function RsvpSection({ token, code }: { token: string; code: string }) {
         </form>
       </div>
     </section>
+    </>
+  );
+}
+
+/* ==========================================================
+   CELEBRATION FLAG (Mario level-clear)
+========================================================== */
+function CelebrationFlag({ firstName, onClose }: { firstName: string; onClose: () => void }) {
+  return (
+    <div className="celebration" role="dialog" aria-label="Presença confirmada">
+      {/* Confete */}
+      <div className="confetti" aria-hidden="true">
+        {Array.from({ length: 30 }).map((_, i) => (
+          <span key={i} style={{ ['--i' as string]: i }} />
+        ))}
+      </div>
+
+      {/* Mastro + bandeira */}
+      <div className="flagpole-wrap" aria-hidden="true">
+        <div className="flagpole" />
+        <div className="flagpole-tip" />
+        <div className="flag">
+          <svg viewBox="0 0 60 40">
+            {/* Verde */}
+            <rect width="60" height="40" fill="#009C3B" stroke="#1A1F4E" strokeWidth="2" />
+            {/* Losango amarelo */}
+            <polygon points="30,5 55,20 30,35 5,20" fill="#FFDF00" />
+            {/* Círculo azul */}
+            <circle cx="30" cy="20" r="9" fill="#002776" />
+            {/* Faixa branca "Ordem e Progresso" */}
+            <path d="M 22 17.5 Q 30 22.5 38 17.5" stroke="white" strokeWidth="1.6" fill="none" />
+            {/* Estrelas (constelações) */}
+            <circle cx="25" cy="19" r="0.6" fill="white" />
+            <circle cx="28" cy="21.5" r="0.5" fill="white" />
+            <circle cx="31" cy="18" r="0.55" fill="white" />
+            <circle cx="33" cy="22" r="0.4" fill="white" />
+            <circle cx="35" cy="19.5" r="0.5" fill="white" />
+            <circle cx="29" cy="24" r="0.4" fill="white" />
+          </svg>
+        </div>
+        <div className="castle">
+          <svg viewBox="0 0 100 80">
+            <rect x="10" y="30" width="80" height="50" fill="#7B4B26" stroke="#1A1F4E" strokeWidth="2" />
+            <rect x="20" y="20" width="15" height="15" fill="#7B4B26" stroke="#1A1F4E" strokeWidth="2" />
+            <rect x="42" y="10" width="15" height="25" fill="#7B4B26" stroke="#1A1F4E" strokeWidth="2" />
+            <rect x="65" y="20" width="15" height="15" fill="#7B4B26" stroke="#1A1F4E" strokeWidth="2" />
+            <rect x="42" y="50" width="15" height="30" fill="#1A1F4E" />
+            <polygon points="20,20 27.5,10 35,20" fill="#E60012" />
+            <polygon points="42,10 49.5,0 57,10" fill="#E60012" />
+            <polygon points="65,20 72.5,10 80,20" fill="#E60012" />
+          </svg>
+        </div>
+      </div>
+
+      <div className="celebration-text">
+        <div className="celebration-eyebrow">★ STAGE CLEAR ★</div>
+        <h1>Presença confirmada!</h1>
+        <p>{firstName}, te esperamos no dia <strong>07/06</strong>! 🎂</p>
+        <button className="celebration-close" onClick={onClose}>Continuar</button>
+      </div>
+    </div>
+  );
+}
+
+/* ==========================================================
+   GAME OVER (resposta "Não vou conseguir")
+========================================================== */
+function GameOverScreen({ firstName, onClose }: { firstName: string; onClose: () => void }) {
+  return (
+    <div className="gameover" role="dialog" aria-label="Não vai conseguir">
+      <div className="gameover-mario" aria-hidden="true">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img alt=""
+             src="https://assets.nintendo.com/image/upload/c_limit,w_320,q_auto:eco,f_auto/v1772215371/ccb3e8ca3c296e21a8c933e8369031511589d0ef6b079cf5bb3667b09893482c/r8f90192da/n30s03d/mario.png" />
+      </div>
+      <div className="gameover-text">
+        <div className="gameover-eyebrow">⚠ GAME OVER ⚠</div>
+        <h1>Que pena, {firstName}!</h1>
+        <p>Vamos sentir sua falta no dia <strong>07/06</strong>. 💔<br />Se mudar de ideia, fala com a gente!</p>
+        <button className="gameover-close" onClick={onClose}>Continuar</button>
+      </div>
+    </div>
   );
 }
